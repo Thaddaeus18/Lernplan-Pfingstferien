@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lernplan – Physik & Exposé</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fafafa; color: #1a1a1a; padding: 24px 16px 48px; max-width: 780px; margin: 0 auto; }
+  h1 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #666; margin-bottom: 20px; }
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+  .stat { background: #f0f0f0; border-radius: 8px; padding: 12px 14px; }
+  .stat-label { font-size: 11px; color: #666; margin-bottom: 4px; }
+  .stat-val { font-size: 22px; font-weight: 600; color: #1a1a1a; }
+  .prog-wrap { margin-bottom: 20px; }
+  .prog-labels { display: flex; justify-content: space-between; font-size: 12px; color: #666; margin-bottom: 6px; }
+  .prog-track { height: 6px; background: #e5e5e5; border-radius: 3px; overflow: hidden; }
+  .prog-fill { height: 100%; background: #1D9E75; border-radius: 3px; transition: width 0.3s; }
+  .view-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .tab-btn { font-size: 13px; padding: 6px 14px; border: 1px solid #ddd; border-radius: 20px; background: #fff; cursor: pointer; color: #555; transition: all 0.15s; }
+  .tab-btn.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+  .view-section { display: none; }
+  .view-section.active { display: block; }
+  .block { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; margin-bottom: 12px; overflow: hidden; }
+  .block-header { padding: 11px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f0f0f0; }
+  .badge { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; flex-shrink: 0; }
+  .block-title { font-size: 14px; font-weight: 500; flex: 1; }
+  .block-hrs { font-size: 12px; color: #888; }
+  .topic-row { display: flex; align-items: center; gap: 10px; padding: 9px 16px; border-bottom: 1px solid #f5f5f5; }
+  .topic-row:last-child { border-bottom: none; }
+  .chk { width: 16px; height: 16px; border: 1.5px solid #ccc; border-radius: 4px; flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+  .chk.done { background: #1D9E75; border-color: #1D9E75; }
+  .chk.done::after { content: ''; display: block; width: 8px; height: 5px; border-left: 1.5px solid #fff; border-bottom: 1.5px solid #fff; transform: rotate(-45deg) translateY(-1px); }
+  .topic-name { flex: 1; font-size: 13px; color: #1a1a1a; line-height: 1.4; }
+  .topic-name.done-txt { color: #aaa; text-decoration: line-through; }
+  .topic-hrs { font-size: 12px; color: #999; min-width: 42px; text-align: right; }
+  .skip { font-size: 10px; color: #3B6D11; background: #EAF3DE; padding: 1px 7px; border-radius: 10px; display: inline-block; margin-top: 2px; }
+  .day-grid { display: flex; flex-direction: column; gap: 8px; }
+  .day-card { display: flex; gap: 0; background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; overflow: hidden; }
+  .day-meta { background: #f5f5f5; padding: 12px 14px; min-width: 90px; display: flex; flex-direction: column; gap: 3px; justify-content: center; border-right: 1px solid #e5e5e5; }
+  .day-date { font-size: 12px; font-weight: 600; color: #1a1a1a; }
+  .day-dow { font-size: 11px; color: #888; }
+  .day-body { flex: 1; padding: 10px 14px; }
+  .day-item { display: flex; align-items: flex-start; gap: 8px; padding: 4px 0; }
+  .day-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+  .day-text { font-size: 13px; color: #333; line-height: 1.4; }
+  .day-h-tag { font-size: 11px; color: #999; flex-shrink: 0; padding-top: 2px; }
+  .day-total { font-size: 11px; color: #888; text-align: right; padding-top: 6px; border-top: 1px solid #f0f0f0; margin-top: 6px; }
+  .tip { background: #E1F5EE; border-radius: 8px; padding: 12px 14px; margin-top: 16px; font-size: 13px; color: #085041; line-height: 1.6; }
+  .tip strong { font-weight: 600; }
+  @media (max-width: 500px) { .stats-row { grid-template-columns: repeat(2,1fr); } .day-meta { min-width: 72px; } }
+</style>
+</head>
+<body>
+
+<h1>Lernplan – Physik & Exposé</h1>
+<p class="subtitle">Q12 · Bayern G9 · Physik-Klausur 08.06.2026 · Exposé-Abgabe 17.06.2026</p>
+
+<div class="stats-row">
+  <div class="stat"><div class="stat-label">Gesamtstunden</div><div class="stat-val" id="s-total">29 h</div></div>
+  <div class="stat"><div class="stat-label">Tage bis Klausur</div><div class="stat-val" id="s-days">7</div></div>
+  <div class="stat"><div class="stat-label">Fortschritt</div><div class="stat-val" id="s-pct">0 %</div></div>
+  <div class="stat"><div class="stat-label">Erledigt</div><div class="stat-val" id="s-done">0 / 20</div></div>
+</div>
+
+<div class="prog-wrap">
+  <div class="prog-labels"><span>Themen abgehakt</span><span id="prog-txt">0 von 20</span></div>
+  <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+</div>
+
+<div class="view-tabs">
+  <button class="tab-btn active" onclick="switchTab('themen')">Nach Themen</button>
+  <button class="tab-btn" onclick="switchTab('tage')">Tagesplan</button>
+</div>
+
+<!-- THEMEN VIEW -->
+<div class="view-section active" id="view-themen">
+
+  <div class="block">
+    <div class="block-header">
+      <span class="badge" style="background:#E6F1FB;color:#185FA5;">Physik A</span>
+      <span class="block-title">Elektrische & magnetische Felder</span>
+      <span class="block-hrs">~8 h</span>
+    </div>
+    <div class="topic-row"><div class="chk" onclick="toggle(this)"></div><span class="topic-name">A5 – Magnetisches Feld (Grundlagen, Formeln)</span><span class="topic-hrs">2 h</span></div>
+    <div class="topic-row"><div class="chk" onclick="toggle(this)"></div><span class="topic-name">A6 – Geladene Teilchen in B-Feldern (Lorentzkraft, Kreisbahn)</span><span class="topic-hrs">2.5 h</span></div>
+    <div class="topic-row"><div class="chk" onclick="toggle(this)"></div><span class="topic-name">A7 – Technische Anwendungen (grobe Züge)</span><span class="topic-hrs">1 h</span></div>
+    <div class="topic-row"><div class="chk" onclick="toggle(this)"></div><span class="topic-name">Übungsaufgaben A (S.63, 65, 80, 101, 103)</span><span class="topic-hrs">2.5 h</span></div>
+  </div>
+
+  <div class="block">
+    <div class="block-header">
+      <span class="badge" style="background:#E1F5EE;color:#0F6E56;">Physik B</span>
+      <span class="block-title">Induktion & elektromagn. Schwingungen</span>
+      <span class="block-hrs">~10 h</span>
+    </div>
+    <div class="topic-row"><div class="chk" onclick="toggle(this)"></div><span class="topic-name">B1.1 – Induktion: Grundprinzip & Faraday <span class="skip">1.2 & 1.3 wegfallen</span></span><span class="topic-hrs">2 h</span></div>
+    <div class="topic-row"><div class="chk" onclick="toggle(this)"></div><span class="topic-name">B2.1 – Selbstinduktion <span class="skip">Kap. 2.2–2.3 wegfallen</span></span><span class="topic-hrs">1.5 h</span></div>
+    <div class="topic-row"><div class="chk" onclick="toggle(this)"></div><span class="topic-name">B4 – Elektromagnetische Schwingungen (LC-Kreis)</span><span class="topic-hrs">2.5 h</span></div>
+    <div class="topic-row"><div class="chk" onclick="toggle(this)"></div><span class="topic-name">B5.1–5.3 – Elektromagnetische Wellen & Dipolstrahlung</span><span class="topic-hrs">2 h</span></div>
+    <div class="topic-row"><div class="chk" onclick="toggle(this)"></div><span class="topic-name">Übungsaufgaben B (S.127, 133–136, 155, 161)</span><span class="topic-hrs">2 h</span></div>
+  </div>
+
+  <div class="block">
+    <div class="block-header">
+      <span class="badge" style="background:#FAEEDA;color:#854F0B;">Physik</span>
+      <span class="block-title">Vertiefung & Klausurvorbereitung</span>
+      <span class="block-hrs">~4 h</span>
+    </div>
+    <div class="topic-row"><div class="chk" onclick="toggle(this)"></div><span class="topic-name">Selbsttests: S.87/6, S.142/1+2, S.143/4+5, S.194/1ab</span><span class="topic-hrs">1 h</span></div>
+    <div class="topic-row"><div class="chk" onclick="toggle(this)"></div><span class="topic-name">Zusammenfassungen S.90–91, S.144–147, S.196+</span><span class="topic-hrs">1 h</span></div>
+    <div class="topic-row"><div class="chk" onclick="toggle(this)"></div><span class="topic-name">Formelsammlung vorbereiten & markieren</span><span class="topic-hrs">1 h</span></div>
+    <div class="topic-row"><div class="chk" onclick="toggle(this)"></div><span class="topic-name">Materialgebundene Aufgabe üben + Generalwiederholung</span><span class="topic-hrs">2 h</span></div>
+  </div>
+
+  <div class="block">
+    <div class="block-header">
+      <span class="badge" style="background:#EEEDFE;color:#534AB7;">Exposé</span>
+      <span class="block-title">Theoretischer Rahmen</span>
+      <span class="block-hrs">~3 h</span>
+    </div>
+    <div class="topic-row"><div class="chk" onclick="toggle(this)"></div><span class="topic-name">Relevante Theorien & Konzepte recherchieren & auswählen</span><span class="topic-hrs">1.5 h</span></div>
+    <div class="topic-row"><div class="chk" onclick="toggle(this)"></div><span class="topic-name">Theoretischen Rahmen verschriftlichen</span><span class="topic-hrs">1.5 h</span></div>
+  </div>
+
+  <div class="block">
+    <div class="block-header">
+      <span class="badge" style="background:#EEEDFE;color:#534AB7;">Exposé</span>
+      <span class="block-title">Methodik</span>
+      <span class="block-hrs">~2.5 h</span>
+    </div>
+    <div class="topic-row"><div class="chk" onclick="toggle(this)"></div><span class="topic-name">Methodenwahl begründen & Vorgehen beschreiben</span><span class="topic-hrs">1 h</span></div>
+    <div class="topic-row"><div class="chk" onclick="toggle(this)"></div><span class="topic-name">Methodik-Abschnitt verschriftlichen</span><span class="topic-hrs">1.5 h</span></div>
+  </div>
+
+  <div class="block">
+    <div class="block-header">
+      <span class="badge" style="background:#EEEDFE;color:#534AB7;">Exposé</span>
+      <span class="block-title">Gliederung & Zeitplan</span>
+      <span class="block-hrs">~2.5 h</span>
+    </div>
+    <div class="topic-row"><div class="chk" onclick="toggle(this)"></div><span class="topic-name">Vorläufige Kapitelgliederung erstellen</span><span class="topic-hrs">1 h</span></div>
+    <div class="topic-row"><div class="chk" onclick="toggle(this)"></div><span class="topic-name">Zeitplan für die Arbeit ausarbeiten & verschriftlichen</span><span class="topic-hrs">1.5 h</span></div>
+  </div>
+
+  <div class="block">
+    <div class="block-header">
+      <span class="badge" style="background:#EEEDFE;color:#534AB7;">Exposé</span>
+      <span class="block-title">Finalisierung</span>
+      <span class="block-hrs">~1.5 h</span>
+    </div>
+    <div class="topic-row"><div class="chk" onclick="toggle(this)"></div><span class="topic-name">Gesamtdurchsicht, Roter Faden prüfen, finales Lektorat</span><span class="topic-hrs">1 h</span></div>
+    <div class="topic-row"><div class="chk" onclick="toggle(this)"></div><span class="topic-name">Abgabe des Exposés (Deadline: 17.06.)</span><span class="topic-hrs">0.5 h</span></div>
+  </div>
+
+</div>
+
+<!-- TAGESPLAN VIEW -->
+<div class="view-section" id="view-tage">
+<div class="day-grid">
+
+  <div class="day-card">
+    <div class="day-meta"><div class="day-date">01.06.</div><div class="day-dow">Montag</div></div>
+    <div class="day-body">
+      <div class="day-item"><div class="day-dot" style="background:#185FA5;"></div><div class="day-text">Physik A5 – Magnetisches Feld: Theorie & Formeln</div><div class="day-h-tag">2 h</div></div>
+      <div class="day-item"><div class="day-dot" style="background:#534AB7;"></div><div class="day-text">Exposé: Theoretischer Rahmen – Recherche & Theorieauswahl</div><div class="day-h-tag">1.5 h</div></div>
+      <div class="day-total">Gesamt: 3.5 h</div>
+    </div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-meta"><div class="day-date">02.06.</div><div class="day-dow">Dienstag</div></div>
+    <div class="day-body">
+      <div class="day-item"><div class="day-dot" style="background:#185FA5;"></div><div class="day-text">Physik A6 – Lorentzkraft, Kreisbahn + Übungsaufgaben S.63, 65</div><div class="day-h-tag">2.5 h</div></div>
+      <div class="day-item"><div class="day-dot" style="background:#534AB7;"></div><div class="day-text">Exposé: Theoretischen Rahmen verschriftlichen</div><div class="day-h-tag">1.5 h</div></div>
+      <div class="day-total">Gesamt: 4 h</div>
+    </div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-meta"><div class="day-date">03.06.</div><div class="day-dow">Mittwoch</div></div>
+    <div class="day-body">
+      <div class="day-item"><div class="day-dot" style="background:#185FA5;"></div><div class="day-text">Physik B1.1 Induktion + B2.1 Selbstinduktion + Übungsaufgaben S.80, 101, 103</div><div class="day-h-tag">3 h</div></div>
+      <div class="day-item"><div class="day-dot" style="background:#534AB7;"></div><div class="day-text">Exposé: Methodik – Methodenwahl begründen & verschriftlichen</div><div class="day-h-tag">2.5 h</div></div>
+      <div class="day-total">Gesamt: 5.5 h</div>
+    </div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-meta"><div class="day-date">04.06.</div><div class="day-dow">Donnerstag</div></div>
+    <div class="day-body">
+      <div class="day-item"><div class="day-dot" style="background:#185FA5;"></div><div class="day-text">Physik B4 – Elektromagn. Schwingungen (LC-Kreis) + Übungsaufgaben S.127, 133–135</div><div class="day-h-tag">3 h</div></div>
+      <div class="day-item"><div class="day-dot" style="background:#534AB7;"></div><div class="day-text">Exposé: Vorläufige Gliederung & Zeitplan erstellen + verschriftlichen</div><div class="day-h-tag">2.5 h</div></div>
+      <div class="day-total">Gesamt: 5.5 h</div>
+    </div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-meta"><div class="day-date">05.06.</div><div class="day-dow">Freitag</div></div>
+    <div class="day-body">
+      <div class="day-item"><div class="day-dot" style="background:#185FA5;"></div><div class="day-text">Physik B5 – Elektromagn. Wellen & Dipolstrahlung + Selbsttests S.87, 142, 143, 194</div><div class="day-h-tag">3 h</div></div>
+      <div class="day-item"><div class="day-dot" style="background:#534AB7;"></div><div class="day-text">Exposé: Gesamtdurchsicht, Lektorat & Abgabeversion fertigstellen</div><div class="day-h-tag">1.5 h</div></div>
+      <div class="day-total">Gesamt: 4.5 h ✓ Alle wesentlichen Teile fertig</div>
+    </div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-meta"><div class="day-date">06.06.</div><div class="day-dow">Samstag</div></div>
+    <div class="day-body">
+      <div class="day-item"><div class="day-dot" style="background:#185FA5;"></div><div class="day-text">Physik: Übungsaufgaben S.136, 155, 161 + A7 technische Anwendungen + Formelsammlung</div><div class="day-h-tag">3 h</div></div>
+      <div class="day-item"><div class="day-dot" style="background:#185FA5;"></div><div class="day-text">Physik: Zusammenfassungen S.90–91, 144–147, 196 + Materialgebundene Aufgabe</div><div class="day-h-tag">2 h</div></div>
+      <div class="day-total">Gesamt: 5 h – Wiederholung & Restliches</div>
+    </div>
+  </div>
+
+  <div class="day-card" style="border-color:#f0dede;">
+    <div class="day-meta" style="background:#fdf5f5;border-right-color:#f0dede;"><div class="day-date">07.06.</div><div class="day-dow" style="color:#c0a0a0;">Sonntag</div></div>
+    <div class="day-body">
+      <div class="day-item"><div class="day-dot" style="background:#ddd;"></div><div class="day-text" style="color:#aaa;">Kein Physik – Ruhetag vor der Klausur</div><div class="day-h-tag" style="color:#ddd;">—</div></div>
+      <div class="day-total" style="color:#ccc;">Klausur morgen: früh schlafen gehen!</div>
+    </div>
+  </div>
+
+  <div class="day-card" style="border-color:#1D9E75;">
+    <div class="day-meta" style="background:#E1F5EE;border-right-color:#9FE1CB;"><div class="day-date" style="color:#085041;">08.06.</div><div class="day-dow" style="color:#0F6E56;">Montag</div></div>
+    <div class="day-body">
+      <div class="day-item"><div class="day-dot" style="background:#1D9E75;"></div><div class="day-text" style="font-weight:500;">Physik-Klausur (gA) – viel Erfolg!</div><div class="day-h-tag"></div></div>
+      <div class="day-total" style="color:#0F6E56;">Danach: Exposé abgeben (bis 17.06.)</div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<div class="tip">
+  <strong>Tipp Exposé:</strong> Nutze Freitag nach dem Physikblock als feste Exposé-Deadline für dich selbst – dann hast du bis 17.06. noch eine Woche Puffer für Feedback oder Korrekturen. Wenn du möchtest, kann ich jeden Abschnitt (Theoretischer Rahmen, Methodik, Gliederung, Zeitplan) direkt mit dir erarbeiten.
+</div>
+
+<script>
+  const TOTAL = 20;
+  const saved = JSON.parse(localStorage.getItem('lp_done') || '[]');
+  const checks = document.querySelectorAll('.chk');
+  checks.forEach((el, i) => { if (saved.includes(i)) { el.classList.add('done'); el.closest('.topic-row').querySelector('.topic-name').classList.add('done-txt'); } });
+  updateStats();
+
+  function toggle(el) {
+    el.classList.toggle('done');
+    const name = el.closest('.topic-row').querySelector('.topic-name');
+    name.classList.toggle('done-txt');
+    const done = [...document.querySelectorAll('.chk')];
+    const doneIdx = done.map((c,i) => c.classList.contains('done') ? i : -1).filter(i => i >= 0);
+    localStorage.setItem('lp_done', JSON.stringify(doneIdx));
+    updateStats();
+  }
+
+  function updateStats() {
+    const done = document.querySelectorAll('.chk.done').length;
+    const pct = Math.round(done / TOTAL * 100);
+    document.getElementById('s-pct').textContent = pct + ' %';
+    document.getElementById('s-done').textContent = done + ' / ' + TOTAL;
+    document.getElementById('prog-fill').style.width = pct + '%';
+    document.getElementById('prog-txt').textContent = done + ' von ' + TOTAL;
+  }
+
+  function switchTab(id) {
+    document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('view-' + id).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  const now = new Date();
+  const exam = new Date('2026-06-08');
+  const diff = Math.max(0, Math.ceil((exam - now) / 86400000));
+  document.getElementById('s-days').textContent = diff;
+</script>
+</body>
+</html>
